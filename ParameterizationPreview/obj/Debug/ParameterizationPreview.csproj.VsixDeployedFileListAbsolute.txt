@@ -1,4 +1,0 @@
-C:\Users\rschiefer1\AppData\Local\Microsoft\VisualStudio\12.0Exp\Extensions\Company\ParameterizationPreview\1.0\\ParameterizationPreview.dll
-C:\Users\rschiefer1\AppData\Local\Microsoft\VisualStudio\12.0Exp\Extensions\Company\ParameterizationPreview\1.0\\ParameterizationPreview.pkgdef
-C:\Users\rschiefer1\AppData\Local\Microsoft\VisualStudio\12.0Exp\Extensions\Company\ParameterizationPreview\1.0\\extension.vsixmanifest
-C:\Users\rschiefer1\AppData\Local\Microsoft\VisualStudio\12.0Exp\Extensions\Company\ParameterizationPreview\1.0\\ParameterizationPreview.pdb
