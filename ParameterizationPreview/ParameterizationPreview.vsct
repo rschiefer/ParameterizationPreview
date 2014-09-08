@@ -64,7 +64,7 @@
       <Button guid="guidParameterizationPreviewCmdSet" id="cmdidPreviewParam" priority="0x0100" type="Button">
           
         <Parent guid="guidParameterizationPreviewCmdSet" id="MyMenuGroup" />
-        <Icon guid="guidImages" id="bmpPic1" />
+        <Icon guid="guidIcon" id="icon.bmpId" />
         <Strings>
           <ButtonText>Preview Parameterization</ButtonText>
         </Strings>
@@ -85,6 +85,7 @@
             inside a button definition. An important aspect of this declaration is that the element id 
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
       <Bitmap guid="guidImages" href="Resources\Images.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows"/>
+      <Bitmap guid="guidIcon" href="Resources\icon.png" usedList="icon.bmpId"/>
       
     </Bitmaps>
  
@@ -104,10 +105,13 @@
       <IDSymbol name="MyMenuGroup" value="0x1020" />
       <IDSymbol name="cmdidPreviewParam" value="0x0100" />
     </GuidSymbol>
-    
-    
-    
-    <GuidSymbol name="guidImages" value="{f7012505-b20a-4c3d-bf49-c9ab1d46e1f4}" >
+
+
+
+    <GuidSymbol name="guidIcon" value="{15165DE4-D0E9-4B8A-A030-CF905F5E6FB8}" >
+      <IDSymbol name="icon.bmpId" value="1"/>
+    </GuidSymbol>
+      <GuidSymbol name="guidImages" value="{f7012505-b20a-4c3d-bf49-c9ab1d46e1f4}" >
       <IDSymbol name="bmpPic1" value="1" />
       <IDSymbol name="bmpPic2" value="2" />
       <IDSymbol name="bmpPicSearch" value="3" />
