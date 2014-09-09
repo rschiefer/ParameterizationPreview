@@ -141,7 +141,14 @@ namespace Company.ParameterizationPreview
                         RunProcess(string.Format("\"copy /Y \"{0}\\*.config\" \"{1}\"\"", projectDir, sourcePath));
 
                         var msdeployExe = "\"C:\\Program Files (x86)\\IIS\\Microsoft Web Deploy V3\\msdeploy.exe\"";
-                        var strDeclareCmdText = string.Format("\"{2} -verb:sync -source:dirPath=\"{0}\" -dest:package=\"{1}\" -declareParamFile:\"{3}\\parameters.xml\"\"", sourcePath, packagePath, msdeployExe, projectDir);
+
+                        var parametersFile = GetProjectFile(item.ProjectItem, "parameters.xml");
+                        if (parametersFile == null)
+                        {
+                            throw new FileNotFoundException("Parameters.xml file must be in the root of the project.  Please add the file and retry.");
+                        }
+
+                        var strDeclareCmdText = string.Format("\"{2} -verb:sync -source:dirPath=\"{0}\" -dest:package=\"{1}\" -declareParamFile:\"{4}\"\"", sourcePath, packagePath, msdeployExe, projectDir, parametersFile);
                         RunProcess(strDeclareCmdText);
 
 
