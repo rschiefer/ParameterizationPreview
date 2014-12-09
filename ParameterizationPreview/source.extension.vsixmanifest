@@ -7,7 +7,7 @@
     <MoreInfo>https://github.com/rschiefer/ParameterizationPreview</MoreInfo>
     <ReleaseNotes>ReleaseNotes.txt</ReleaseNotes>
     <Icon>Resources\iconBig.png</Icon>
-    <PreviewImage>Resources\screenshot.png</PreviewImage>
+    <PreviewImage>Resources\screenshot_1.1.png</PreviewImage>
     <Tags>parameterization; web deploy; msdeploy</Tags>
   </Metadata>
   <Installation InstalledByMsi="false">
