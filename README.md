@@ -10,6 +10,13 @@ To use the tool simply right click on a "SetParamaters.[configuration].xml" (i.e
 
 Behind the scenes a MSDeploy package is created from the config files and then deploys that package to a temp directory at the root of the solution.  Finally a VS file comparison of the resulting parameterized config against the original is displayed.
 
+V1.1
+----
+
+Added right click menu command to compare Config Transform result with Parameterization result.  If no config transform is found which matches the configuration name of the SetParameters file an error will be thrown.  For example, SetParameters.DEV1.xml would require a transform file named Web.DEV1.config.
+
+XML formatting was also added to standardize the files for easier comparison.
+
 Troubleshooting
 ---------------
 
