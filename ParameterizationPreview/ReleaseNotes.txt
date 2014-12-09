@@ -11,3 +11,10 @@ Version 1.0.1 - 2014.09.09
 -----------
 
 Added error message for missing parameters.xml file.
+
+
+Version 1.1.0 - 2014.12.07
+-----------
+
+Added "Compare Parameterization to Transform" right click command which allows user to compare output of parameterization to output of config transformation. 
+Added XML formatting to all files.

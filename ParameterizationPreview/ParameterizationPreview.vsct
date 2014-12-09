@@ -41,7 +41,7 @@
          must be a menu. -->
     <Groups>
 
-      <Group guid="guidParameterizationPreviewCmdSet" id="MyMenuGroup" priority="0x0600">
+      <Group guid="guidParameterizationPreviewCmdSet" id="ParameterizationPreview" priority="0x0600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_ITEMNODE"/>
       </Group>
       
@@ -62,11 +62,23 @@
           If you do not want an image next to your command, remove the Icon node /> -->
 
       <Button guid="guidParameterizationPreviewCmdSet" id="cmdidPreviewParam" priority="0x0100" type="Button">
-          
-        <Parent guid="guidParameterizationPreviewCmdSet" id="MyMenuGroup" />
+
+        <Parent guid="guidParameterizationPreviewCmdSet" id="ParameterizationPreview" />
         <Icon guid="guidIcon" id="icon.bmpId" />
         <Strings>
           <ButtonText>Preview Parameterization</ButtonText>
+        </Strings>
+
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <!--<CommandFlag>TextChanges</CommandFlag>-->
+      </Button>
+
+      <Button guid="guidParameterizationPreviewCmdSet" id="cmdidPreviewToTranformParam" priority="0x0200" type="Button">
+
+        <Parent guid="guidParameterizationPreviewCmdSet" id="ParameterizationPreview" />
+        <Icon guid="guidIcon" id="icon.bmpId" />
+        <Strings>
+          <ButtonText>Compare Parameterization to Transform</ButtonText>
         </Strings>
 
         <CommandFlag>DynamicVisibility</CommandFlag>
@@ -102,8 +114,9 @@
     <!-- This is the guid used to group the menu commands together -->
     <GuidSymbol name="guidParameterizationPreviewCmdSet" value="{12d5c20a-c12b-4838-8290-b7f98a3ce785}">
 
-      <IDSymbol name="MyMenuGroup" value="0x1020" />
+      <IDSymbol name="ParameterizationPreview" value="0x1020" />
       <IDSymbol name="cmdidPreviewParam" value="0x0100" />
+      <IDSymbol name="cmdidPreviewToTranformParam" value="0x0200" />
     </GuidSymbol>
 
 

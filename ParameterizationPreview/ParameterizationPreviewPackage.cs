@@ -12,6 +12,9 @@ using EnvDTE;
 using System.Linq;
 using System.IO;
 using System.Windows.Forms;
+using Microsoft.Web.XmlTransform;
+using System.Xml;
+using System.Text;
 
 namespace Company.ParameterizationPreview
 {
@@ -70,9 +73,15 @@ namespace Company.ParameterizationPreview
             {
                 // Create the command for the menu item.
                 CommandID menuCommandID = new CommandID(GuidList.guidParameterizationPreviewCmdSet, (int)PkgCmdIDList.cmdidPreviewParam);
-                var menuItem = new OleMenuCommand(MenuItemCallback, menuCommandID);
+                var menuItem = new OleMenuCommand(MenuItemCallback_PreviewParameterization, menuCommandID);
                 menuItem.BeforeQueryStatus += menuItem_BeforeQueryStatus;
                 mcs.AddCommand(menuItem);
+
+                // Create the command for the menu item.
+                CommandID menuCommandID2 = new CommandID(GuidList.guidParameterizationPreviewCmdSet, (int)PkgCmdIDList.cmdidPreviewToTranformParam);
+                var menuPreviewToTransformItem = new OleMenuCommand(MenuItemCallback_CompareParameterizationToTransform, menuCommandID2);
+                menuPreviewToTransformItem.BeforeQueryStatus += menuItem_BeforeQueryStatus;
+                mcs.AddCommand(menuPreviewToTransformItem);
 
             }
         }
@@ -109,9 +118,8 @@ namespace Company.ParameterizationPreview
         /// See the Initialize method to see how the menu item is associated to this function using
         /// the OleMenuCommandService service and the MenuCommand class.
         /// </summary>
-        private void MenuItemCallback(object sender, EventArgs e)
+        private void MenuItemCallback_PreviewParameterization(object sender, EventArgs e)
         {
-
             var myCommand = sender as OleMenuCommand;
 
             DTE dte = (DTE)GetService(typeof(SDTE));
@@ -122,66 +130,147 @@ namespace Company.ParameterizationPreview
                 {
                     if (item.Name.StartsWith("SetParameters.", StringComparison.OrdinalIgnoreCase))
                     {
-                        string strCmdText;
-                        var fullPath = item.ProjectItem.get_FileNames(0);
-                        var projectDir = fullPath.Substring(0, fullPath.LastIndexOf("\\"));
-                        var solutionDir = projectDir.Substring(0, projectDir.LastIndexOf("\\"));
-                        var packagePath = string.Format("{0}\\temp\\ParameterizationPreview\\package\\package.zip", solutionDir);
-                        var destPath = string.Format("{0}\\temp\\ParameterizationPreview\\dest", solutionDir);
-                        var sourcePath = string.Format("{0}\\temp\\ParameterizationPreview\\source", solutionDir);
-
-
-                        var paramTempPath = solutionDir + "\\temp\\ParameterizationPreview";
-                        RunProcess(string.Format("\"del \"{0}\\*.*\" /q /s /f\"", paramTempPath));
-
-                        RunProcess(string.Format("\"mkdir \"{0}/package\"\"", paramTempPath));
-                        RunProcess(string.Format("\"mkdir \"{0}/source\"\"", paramTempPath));
-                        RunProcess(string.Format("\"mkdir \"{0}/dest\"\"", paramTempPath));
-
-                        RunProcess(string.Format("\"copy /Y \"{0}\\*.config\" \"{1}\"\"", projectDir, sourcePath));
-
-                        var msdeployExe = "\"C:\\Program Files (x86)\\IIS\\Microsoft Web Deploy V3\\msdeploy.exe\"";
-
-                        var parametersFile = GetProjectFile(item.ProjectItem, "parameters.xml");
-                        if (parametersFile == null)
-                        {
-                            throw new FileNotFoundException("Parameters.xml file must be in the root of the project.  Please add the file and retry.");
-                        }
-
-                        var strDeclareCmdText = string.Format("\"{2} -verb:sync -source:dirPath=\"{0}\" -dest:package=\"{1}\" -declareParamFile:\"{4}\"\"", sourcePath, packagePath, msdeployExe, projectDir, parametersFile);
-                        RunProcess(strDeclareCmdText);
-
-
-                        var strSetCmdText = string.Format("\"{3} -verb:sync -source:package=\"{0}\" -dest:dirPath=\"{1}\" -setParamFile:\"{2}\"\"", packagePath, destPath, fullPath, msdeployExe);
-
-                        RunProcess(strSetCmdText);
-                        
                         var configFile = GetProjectFile(item.ProjectItem, "web.config");
                         configFile = GetProjectFile(item.ProjectItem, "app.config") ?? configFile;
 
-                        //var webconfig = item.ProjectItem.Collection.Item("web.config");
-                        //var appconfig = item.ProjectItem.Collection.Item("app.config");
-                        //var configFile = (webconfig ?? appconfig).get_FileNames(0);
+                        var result = GenerateParameterizationResult(item, configFile);
 
-                        //string configFile = string.Empty;
-                        //foreach(ItemOperations p in item.Project.ProjectItems){
-                        //    var filename = p.get_FileNames(0);
-                        //    if (filename.EndsWith("app.config") || filename.EndsWith("web.config")){
-                        //        configFile = filename;
-                        //    }
-                        //}
+                        if (item.DTE.SourceControl.IsItemUnderSCC(configFile))
+                            item.DTE.SourceControl.CheckOutItem(configFile);
+                        PrettifyXml(configFile);
 
-                        dte.ExecuteCommand("Tools.DiffFiles", string.Format("\"{0}\" \"{1}\\{2}\"", configFile, destPath, configFile.Remove(0, configFile.LastIndexOf('\\'))));
+                        dte.ExecuteCommand("Tools.DiffFiles", string.Format("\"{0}\" \"{1}\"", configFile, result));
+                    }
+                }
+            }         
+        }
+        private void MenuItemCallback_CompareParameterizationToTransform(object sender, EventArgs e)
+        {
+            var myCommand = sender as OleMenuCommand;
+
+            DTE dte = (DTE)GetService(typeof(SDTE));
+            if (dte.SelectedItems.Count > 0)
+            {
+                var items = dte.SelectedItems as SelectedItems;
+                foreach (SelectedItem item in items)
+                {
+                    if (item.Name.StartsWith("SetParameters.", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var configFile = GetProjectFile(item.ProjectItem, "web.config");
+                        configFile = GetProjectFile(item.ProjectItem, "app.config") ?? configFile;
+
+                        var parameterizedResult = GenerateParameterizationResult(item, configFile);
+                        PrettifyXml(parameterizedResult);
+                        var transformedResult = GenerateConfigTransformResult(item, configFile);
+
+                        dte.ExecuteCommand("Tools.DiffFiles", string.Format("\"{0}\" \"{1}\"", transformedResult, parameterizedResult));
                     }
                 }
             }
-
         }
+
+        private string GenerateParameterizationResult(SelectedItem item, string configFile)
+        {
+            string strCmdText;
+            var fullPath = item.ProjectItem.get_FileNames(0);
+            var projectDir = fullPath.Substring(0, fullPath.LastIndexOf("\\"));
+            var solutionDir = projectDir.Substring(0, projectDir.LastIndexOf("\\"));
+            var packagePath = string.Format("{0}\\temp\\ParameterizationPreview\\package\\package.zip", solutionDir);
+            var destPath = string.Format("{0}\\temp\\ParameterizationPreview\\dest", solutionDir);
+            var sourcePath = string.Format("{0}\\temp\\ParameterizationPreview\\source", solutionDir);
+
+
+            var paramTempPath = solutionDir + "\\temp\\ParameterizationPreview";
+            RunProcess(string.Format("\"del \"{0}\\*.*\" /q /s /f\"", paramTempPath));
+
+            RunProcess(string.Format("\"mkdir \"{0}/package\"\"", paramTempPath));
+            RunProcess(string.Format("\"mkdir \"{0}/source\"\"", paramTempPath));
+            RunProcess(string.Format("\"mkdir \"{0}/dest\"\"", paramTempPath));
+
+            RunProcess(string.Format("\"copy /Y \"{0}\\*.config\" \"{1}\"\"", projectDir, sourcePath));
+
+            var msdeployExe = "\"C:\\Program Files (x86)\\IIS\\Microsoft Web Deploy V3\\msdeploy.exe\"";
+
+            var parametersFile = GetProjectFile(item.ProjectItem, "parameters.xml");
+            if (parametersFile == null)
+            {
+                throw new FileNotFoundException("Parameters.xml file must be in the root of the project.  Please add the file and retry.");
+            }
+
+            var strDeclareCmdText = string.Format("\"{2} -verb:sync -source:dirPath=\"{0}\" -dest:package=\"{1}\" -declareParamFile:\"{4}\"\"", sourcePath, packagePath, msdeployExe, projectDir, parametersFile);
+            RunProcess(strDeclareCmdText);
+
+
+            var strSetCmdText = string.Format("\"{3} -verb:sync -source:package=\"{0}\" -dest:dirPath=\"{1}\" -setParamFile:\"{2}\"\"", packagePath, destPath, fullPath, msdeployExe);
+
+            RunProcess(strSetCmdText);
+
+            var parameterizedConfig = string.Format("{0}\\{1}", destPath, configFile.Remove(0, configFile.LastIndexOf('\\')));
+            PrettifyXml(parameterizedConfig);
+
+            return parameterizedConfig;
+        }
+
+
+        private string GenerateConfigTransformResult(SelectedItem item, string configFile)
+        {
+            var configuration = item.Name.Substring(item.Name.IndexOf('.') + 1);
+            configuration = configuration.Remove(configuration.LastIndexOf('.'));
+
+            var configFilename = configFile.Remove(configFile.LastIndexOf('.')).Substring(configFile.LastIndexOf('\\') + 1);
+            var configTransformFilename = string.Format("{0}.{1}.config", configFilename, configuration);
+            var configTranformFile = item.ProjectItem.Collection.Item(configFilename + ".config").ProjectItems.Item(configTransformFilename).get_FileNames(0);
+            
+            var transformation = new XmlTransformation(configTranformFile);
+
+            var xmlSource = new XmlDocument();
+            xmlSource.Load(configFile);
+
+            transformation.Apply(xmlSource);
+            
+            var fullPath = item.ProjectItem.get_FileNames(0);
+            var projectDir = fullPath.Substring(0, fullPath.LastIndexOf("\\"));
+            var solutionDir = projectDir.Substring(0, projectDir.LastIndexOf("\\"));
+
+
+            var transformedFolder = string.Format("{0}\\temp\\ParameterizationPreview\\ConfigTransform", solutionDir);
+            RunProcess(string.Format("\"del \"{0}\\*.*\" /q /s /f\"", transformedFolder));
+            RunProcess(string.Format("\"mkdir \"{0}\"\"", transformedFolder));
+
+            var transformedConfig = string.Format("{0}\\transformed.config", transformedFolder);
+            var settings = new XmlWriterSettings
+            {
+                Indent = true,
+                NewLineOnAttributes = true
+            };
+            using (var xmlWriter = XmlWriter.Create(transformedConfig, settings))
+            {
+                xmlSource.WriteTo(xmlWriter);
+            }
+
+            return transformedConfig;
+        }
+        void PrettifyXml(string filePath)
+        {
+            var xml = new XmlDocument();
+            xml.Load(filePath);
+            var settings = new XmlWriterSettings
+            {
+                Indent = true,
+                NewLineOnAttributes = true
+            };
+            using (var xmlWriter = XmlWriter.Create(filePath, settings))
+            {
+                xml.WriteTo(xmlWriter);
+            }
+        }
+
         string GetProjectFile(ProjectItem project, string name)
         {
             try
             {
-                return project.Collection.Item(name).get_FileNames(0);
+                var file = project.Collection.Item(name);
+                return file.get_FileNames(0);
             }
             catch (Exception ex)
             {
