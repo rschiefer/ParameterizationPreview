@@ -6,7 +6,7 @@ https://visualstudiogallery.msdn.microsoft.com/6e67f6dc-cce6-40fe-9561-8d618e0cd
 Overview
 --------
 
-This Visual Studio extension provides the easiest way to preview MSDeploy (WebDeploy) parameterization against an applications config file.  The extension currently supports VS2012 and VS2013.
+This Visual Studio extension provides the easiest way to preview MSDeploy (WebDeploy) parameterization against an applications config file.  The extension currently supports VS2012, VS2013 and VS2015.
 
 To use the tool simply right click on a "SetParamaters.[configuration].xml" (i.e. SetParameters.Release.xml) file in the Solution Explorer and choose the "ParameterizationPreview" option.  A few command windows will pop up then close and eventually display the comparison of the original config file against the parameterized config.
 
@@ -18,6 +18,11 @@ V1.1
 Added right click menu command to compare Config Transform result with Parameterization result.  If no config transform is found which matches the configuration name of the SetParameters file an error will be thrown.  For example, SetParameters.DEV1.xml would require a transform file named Web.DEV1.config.
 
 XML formatting was also added to standardize the files for easier comparison.
+
+V1.2
+----
+
+Upgraded to support VS2015.
 
 Troubleshooting
 ---------------
