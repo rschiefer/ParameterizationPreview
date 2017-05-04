@@ -3,18 +3,13 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
-using Microsoft.Win32;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using EnvDTE;
-using System.Linq;
 using System.IO;
 using System.Windows.Forms;
-using Microsoft.Web.XmlTransform;
 using System.Xml;
-using System.Text;
+using Microsoft.Web.XmlTransform;
 
 namespace Company.ParameterizationPreview
 {
@@ -37,7 +32,9 @@ namespace Company.ParameterizationPreview
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(GuidList.guidParameterizationPreviewPkgString)]
-    [ProvideAutoLoad("{f1536ef8-92ec-443c-9ed7-fdadf150da82}")]
+    //[ProvideAutoLoad("{f1536ef8-92ec-443c-9ed7-fdadf150da82}")]
+    [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
+
     public sealed class ParameterizationPreviewPackage : Package
     {
         /// <summary>
@@ -171,7 +168,6 @@ namespace Company.ParameterizationPreview
 
         private string GenerateParameterizationResult(SelectedItem item, string configFile)
         {
-            string strCmdText;
             var fullPath = item.ProjectItem.get_FileNames(0);
             var projectDir = fullPath.Substring(0, fullPath.LastIndexOf("\\"));
             var solutionDir = projectDir.Substring(0, projectDir.LastIndexOf("\\"));
@@ -272,7 +268,7 @@ namespace Company.ParameterizationPreview
                 var file = project.Collection.Item(name);
                 return file.get_FileNames(0);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }
@@ -310,7 +306,7 @@ namespace Company.ParameterizationPreview
             {
                 Debug.Write(process.StandardOutput.ReadToEnd());
             }
-            catch (Exception ex) { }
+            catch (Exception) { }
             return process;
         }
     }
