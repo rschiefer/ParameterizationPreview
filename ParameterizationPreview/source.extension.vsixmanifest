@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="924827a5-4d34-44bf-a250-aa72d2b892b6" Version="1.16.0" Language="en-US" Publisher="Robb Schiefer" />
+    <Identity Id="924827a5-4d34-44bf-a250-aa72d2b892b6" Version="1.15.0" Language="en-US" Publisher="Robb Schiefer" />
     <DisplayName>ParameterizationPreview</DisplayName>
     <Description xml:space="preserve">Visual Studio 2017 extension for previewing MSDeploy (WebDeploy) Parameterization output.</Description>
     <MoreInfo>https://github.com/rschiefer/ParameterizationPreview</MoreInfo>
