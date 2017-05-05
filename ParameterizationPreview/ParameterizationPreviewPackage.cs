@@ -49,8 +49,6 @@ namespace Company.ParameterizationPreview
             Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
         }
 
-
-
         /////////////////////////////////////////////////////////////////////////////
         // Overridden Package Implementation
         #region Package Members
